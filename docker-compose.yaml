@@ -64,7 +64,6 @@ services:
       - .env
     environment:
       - KUBEMASTER=http://kube-api:8080
-      - MENU_URL=telnet://127.0.0.1:13370
     networks:
       - sandwich
   deli-menu:
