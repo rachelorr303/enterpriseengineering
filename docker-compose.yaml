@@ -15,7 +15,7 @@ services:
     logging:  # Don't need to see these logs
       driver: none
   kube-api:
-    image: gcr.io/google_containers/hyperkube-amd64:v1.9.2
+    image: gcr.io/google_containers/hyperkube-amd64:v1.8.7
     command:
       - kube-apiserver
       - --etcd-servers=http://etcd:2379
@@ -31,7 +31,7 @@ services:
       driver: none
   # Controller manager is needed to run the namespace lifecycle
   kube-controller-manager:
-    image: gcr.io/google_containers/kube-controller-manager-amd64:v1.9.2
+    image: gcr.io/google_containers/kube-controller-manager-amd64:v1.8.7
     command:
       - kube-controller-manager
       - --controllers=*,tokencleaner  # TODO: figure out what controllers we actually need
