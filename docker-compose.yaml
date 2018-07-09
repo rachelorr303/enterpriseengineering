@@ -15,7 +15,7 @@ services:
     logging:  # Don't need to see these logs
       driver: none
   kube-api:
-    image: gcr.io/google_containers/hyperkube-amd64:v1.8.7
+    image: gcr.io/google_containers/hyperkube-amd64:v1.9.2
     command:
       - kube-apiserver
       - --etcd-servers=http://etcd:2379
@@ -31,7 +31,7 @@ services:
       driver: none
   # Controller manager is needed to run the namespace lifecycle
   kube-controller-manager:
-    image: gcr.io/google_containers/kube-controller-manager-amd64:v1.8.7
+    image: gcr.io/google_containers/kube-controller-manager-amd64:v1.9.2
     command:
       - kube-controller-manager
       - --controllers=*,tokencleaner  # TODO: figure out what controllers we actually need
@@ -41,29 +41,37 @@ services:
       - sandwich
     logging:  # Don't need to see these logs
       driver: none
+  # Redis to do cache stuffs
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    logging:  # Don't need to see these logs
+      driver: none
+    networks:
+      - sandwich
   deli-counter:
     image: sandwichcloud/deli-counter:latest
     environment:
       - KUBEMASTER=http://kube-api:8080
-      - DATABASE_DRIVER=sqlite
-      - DATABASE_DB=/db/sandwich.db
-      - DATABASE_HOST=
-      - DATABASE_USERNAME=
-      - DATABASE_PASSWORD=
-      - AUTH_DRIVERS=deli.counter.auth.drivers.database.driver:DatabaseAuthDriver
       - AUTH_FERNET_KEYS=oT7YhuLp37WTBtfI0I63xwg0iV6vmb-VQwVK7OHfV1U=
+      - OPENID_ISSUER_URL=http://localhost:8080
+      - OPENID_CLIENT_ID=asdasd
+      - OPENID_CLIENT_SECRET=asdasd
+      - OPENID_EMAIL_CLAIM=email
+      - OPENID_GROUPS_CLAIM=groups
+      - REDIS_URL=redis://redis:6379
     networks:
       - sandwich
     ports:
       - "8080:8080"
-    volumes:
-      - counter_db:/db
   deli-manager:
     image: sandwichcloud/deli-manager:latest
     env_file:
       - .env
     environment:
       - KUBEMASTER=http://kube-api:8080
+      - REDIS_URL=redis://redis:6379
     networks:
       - sandwich
   deli-menu:
@@ -71,6 +79,7 @@ services:
     environment:
       - KUBEMASTER=http://kube-api:8080
       - FERNET_KEY=oT7YhuLp37WTBtfI0I63xwg0iV6vmb-VQwVK7OHfV1U=
+      - REDIS_URL=redis://redis:6379
     networks:
       - sandwich
     ports:
@@ -81,4 +90,3 @@ networks:
 
 volumes:
   etcd:
-  counter_db:
